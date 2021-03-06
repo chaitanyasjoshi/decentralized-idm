@@ -2,10 +2,20 @@ import React, { Component } from 'react';
 import IdentityManagerContract from './abis/IdentityManager.json';
 import getWeb3 from './getWeb3';
 
+import Navbar from './components/Navbar';
+import Card from './components/Card';
+
 import './App.css';
 
 class App extends Component {
-  state = { documentCount: 0, web3: null, accounts: null, contract: null };
+  state = {
+    web3: null,
+    accounts: null,
+    contract: null,
+    issuer: [],
+    name: [],
+    data: [],
+  };
 
   componentDidMount = async () => {
     try {
@@ -25,7 +35,10 @@ class App extends Component {
 
       // Set web3, accounts, and contract to the state, and then proceed with an
       // example of interacting with the contract's methods.
-      this.setState({ web3, accounts, contract: instance }, this.runExample);
+      this.setState(
+        { web3, accounts, contract: instance },
+        this.fetchDocuments
+      );
     } catch (error) {
       // Catch any errors for any of the above operations.
       alert(
@@ -35,20 +48,17 @@ class App extends Component {
     }
   };
 
-  runExample = async () => {
+  fetchDocuments = async () => {
     const { accounts, contract } = this.state;
 
-    // Stores a given value, 5 by default.
-    //await contract.methods.set(5).send({ from: accounts[0] });
-
     // Get the value from the contract to prove it worked.
-    const response = await contract.methods
-      .getDocumentCount()
-      .call({ from: accounts[0] });
-    console.log(response);
+    const { 0: issuer, 1: name, 2: data } = await contract.methods
+      .getDocuments()
+      .call({ from: accounts[0] })
+      .then((result) => result);
 
     // Update state with the result.
-    this.setState({ documentCount: response });
+    this.setState({ issuer, name, data });
   };
 
   render() {
@@ -57,7 +67,11 @@ class App extends Component {
     }
     return (
       <div className='App'>
-        <div>No of documents: {this.state.documentCount}</div>
+        <Navbar />
+        <div>Issuer: {this.state.issuer[0]} </div>
+        <div>Name: {this.state.name[0]} </div>
+        <div>Data: {this.state.data[0]} </div>
+        <Card />
       </div>
     );
   }
