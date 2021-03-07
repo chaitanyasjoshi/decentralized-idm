@@ -1,20 +1,16 @@
 import React, { Component } from 'react';
-import IdentityManagerContract from './abis/IdentityManager.json';
-import getWeb3 from './getWeb3';
+import IdentityManagerContract from '../abis/IdentityManager.json';
+import getWeb3 from '../utils/getWeb3';
 
-import Navbar from './components/Navbar';
-import Card from './components/Card';
-
-import './App.css';
+import Navbar from './Navbar';
+import Dashboard from './Dashboard';
 
 class App extends Component {
   state = {
     web3: null,
     accounts: null,
     contract: null,
-    issuer: [],
-    name: [],
-    data: [],
+    documents: null,
   };
 
   componentDidMount = async () => {
@@ -35,9 +31,16 @@ class App extends Component {
 
       // Set web3, accounts, and contract to the state, and then proceed with an
       // example of interacting with the contract's methods.
-      this.setState(
-        { web3, accounts, contract: instance },
-        this.fetchDocuments
+      this.setState({ web3, accounts, contract: instance });
+      this.fetchDocuments();
+      window.ethereum.on(
+        'accountsChanged',
+        async function (accounts) {
+          // Not using returned accounts as it returns lowercase address
+          const newAccounts = await web3.eth.getAccounts();
+          this.setState({ accounts: newAccounts });
+          this.fetchDocuments();
+        }.bind(this)
       );
     } catch (error) {
       // Catch any errors for any of the above operations.
@@ -51,14 +54,11 @@ class App extends Component {
   fetchDocuments = async () => {
     const { accounts, contract } = this.state;
 
-    // Get the value from the contract to prove it worked.
-    const { 0: issuer, 1: name, 2: data } = await contract.methods
+    // Get documents from contract.
+    await contract.methods
       .getDocuments()
       .call({ from: accounts[0] })
-      .then((result) => result);
-
-    // Update state with the result.
-    this.setState({ issuer, name, data });
+      .then((documents) => this.setState({ documents }));
   };
 
   render() {
@@ -67,11 +67,8 @@ class App extends Component {
     }
     return (
       <div className='App'>
-        <Navbar />
-        <div>Issuer: {this.state.issuer[0]} </div>
-        <div>Name: {this.state.name[0]} </div>
-        <div>Data: {this.state.data[0]} </div>
-        <Card />
+        <Navbar user={this.state.accounts[0]} />
+        {this.state.documents && <Dashboard documents={this.state.documents} />}
       </div>
     );
   }

@@ -1,42 +1,23 @@
 import React from 'react';
+import gradient from 'random-gradient';
 
-export default function Card() {
+export default function Card(props) {
   return (
-    <div>
-      <div className='w-96 h-56 m-auto bg-black rounded-xl text-white shadow-md transition-transform transform hover:scale-105 hover:shadow-2xl'>
-        <div className='w-full px-8 absolute top-8'>
-          <div className='flex justify-between'>
-            <div className=''>
-              <p className='font-light'>Name</p>
-              <p className='font-bold tracking-widest font-mono'>Karthik P</p>
-            </div>
-          </div>
-          <div className='pt-1'>
-            <p className='font-light'>Num.</p>
-            <p className='font-medium tracking-more-wider font-mono'>
-              <strong>4642</strong> 3489 9867{' '}
-              <span className='bg-blue-700  rounded-full px-2 py-1 text-xs absolute'>
-                ●●●●
-              </span>
-            </p>
-          </div>
-          <div className='pt-6 pr-6'>
-            <div className='flex justify-between'>
-              <div className=''>
-                <p className='font-light text-xs'>Expires At</p>
-                <p className='font-medium tracking-wider text-sm font-mono'>
-                  03/25
-                </p>
-              </div>
-
-              <div className=''>
-                <p className='font-light text-xs'>CVC</p>
-                <p className='font-bold tracking-more-wider text-sm font-mono'>
-                  123
-                </p>
-              </div>
-            </div>
-          </div>
+    <div
+      style={{
+        background: gradient(`${props.issuer + props.name + props.data}`),
+      }}
+      className='w-96 h-56 font-Poppins rounded-xl text-white shadow-md transition-transform transform hover:scale-105 hover:shadow-2xl'
+    >
+      <div className='w-full p-6 absolute'>
+        <div className='flex justify-center'>
+          <p className='font-medium text-xl'>{props.name}</p>
+        </div>
+        <div className='flex-wrap'>
+          <p className='font-normal'>Issuer</p>
+          <p className='font-light tracking-tighter'>{props.issuer}</p>
+          <p className='font-normal'>Data</p>
+          <p className='font-light tracking-tighter'>{props.data}</p>
         </div>
       </div>
     </div>
