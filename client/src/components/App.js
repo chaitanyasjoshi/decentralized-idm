@@ -67,8 +67,11 @@ class App extends Component {
     }
     return (
       <div className='App'>
-        <Navbar user={this.state.accounts[0]} />
-        {this.state.documents && <Dashboard documents={this.state.documents} />}
+        <Navbar
+          user={this.state.accounts[0]}
+          documents={this.state.documents}
+        />
+        {/* {this.state.documents && <Dashboard documents={this.state.documents} />} */}
       </div>
     );
   }
