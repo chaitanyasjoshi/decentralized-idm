@@ -139,13 +139,13 @@ contract IdentityManager {
     require(bytes(_docName).length > 0);
 
     for (uint256 index = 0; index < ownerRequests[msg.sender].length; index++) {
-      if (compareStringsbyBytes(ownerRequests[msg.sender][index].docName, _docName)) {
+      if (compareStringsbyBytes(ownerRequests[msg.sender][index].docName, _docName) && ownerRequests[msg.sender][index].requestor == _verifier) {
         ownerRequests[msg.sender][index].status = _newStatus;
       }
     }
 
     for (uint256 index = 0; index < verifierRequests[_verifier].length; index++) {
-      if (compareStringsbyBytes(verifierRequests[_verifier][index].docName, _docName)) {
+      if (compareStringsbyBytes(verifierRequests[_verifier][index].docName, _docName) && verifierRequests[_verifier][index].owner == msg.sender) {
         verifierRequests[_verifier][index].status = _newStatus;
       }
     }
@@ -153,10 +153,9 @@ contract IdentityManager {
     emit RequestStatusUpdated(_verifier, msg.sender, _docName, _newStatus);
   }
 
-  function getOwnerRequests() view public returns(address[] memory, address[] memory, string[] memory, string[] memory, string[] memory) {
+  function getOwnerRequests() view public returns(address[] memory, string[] memory, string[] memory, string[] memory) {
     uint _reqCount = ownerRequests[msg.sender].length;
     address[] memory _requestor = new address[](_reqCount);
-    address[] memory _owner = new address[](_reqCount);
     string[] memory _docName = new string[](_reqCount);
     string[] memory _properties = new string[](_reqCount);
     string[] memory _status = new string[](_reqCount);
@@ -164,18 +163,16 @@ contract IdentityManager {
     for (uint256 index = 0; index < _reqCount; index++) {
       Request memory _reqCopy = ownerRequests[msg.sender][index];
       _requestor[index] = _reqCopy.requestor;
-      _owner[index] = _reqCopy.owner;
       _docName[index] = _reqCopy.docName;
       _properties[index] = _reqCopy.properties;
       _status[index] = _reqCopy.status;
     }
 
-    return (_requestor, _owner, _docName, _properties, _status);
+    return (_requestor, _docName, _properties, _status);
   }
 
-  function getVerifierRequests() view public returns(address[] memory, address[] memory, string[] memory, string[] memory, string[] memory) {
+  function getVerifierRequests() view public returns(address[] memory, string[] memory, string[] memory, string[] memory) {
     uint _reqCount = verifierRequests[msg.sender].length;
-    address[] memory _requestor = new address[](_reqCount);
     address[] memory _owner = new address[](_reqCount);
     string[] memory _docName = new string[](_reqCount);
     string[] memory _properties = new string[](_reqCount);
@@ -183,14 +180,13 @@ contract IdentityManager {
 
     for (uint256 index = 0; index < _reqCount; index++) {
       Request memory _reqCopy = verifierRequests[msg.sender][index];
-      _requestor[index] = _reqCopy.requestor;
       _owner[index] = _reqCopy.owner;
       _docName[index] = _reqCopy.docName;
       _properties[index] = _reqCopy.properties;
       _status[index] = _reqCopy.status;
     }
 
-    return (_requestor, _owner, _docName, _properties, _status);
+    return (_owner, _docName, _properties, _status);
   }
 
   function compareStringsbyBytes(string memory s1, string memory s2) public pure returns(bool) {

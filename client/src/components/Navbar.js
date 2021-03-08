@@ -1,14 +1,19 @@
 import React from 'react';
 import { useState } from 'react';
-import { BrowserRouter as Router, Switch, Route, Link } from 'react-router-dom';
+import {
+  BrowserRouter as Router,
+  Switch,
+  Route,
+  NavLink,
+} from 'react-router-dom';
 
 import multiavatar from '@multiavatar/multiavatar';
 import logo from '../assets/logo.png';
 
 import Dashboard from './Dashboard';
+import Table from './Table';
 
 export default function Navbar(props) {
-  const [tab, setTab] = useState('Dashboard');
   const [showMenu, setMenu] = useState(false);
   return (
     <Router>
@@ -78,50 +83,35 @@ export default function Navbar(props) {
               <div className='hidden sm:block sm:ml-6'>
                 <div className='flex space-x-4'>
                   {/* Current: "bg-gray-900 text-white", Default: "text-gray-300 hover:bg-gray-700 hover:text-white" */}
-                  <Link
+                  <NavLink
                     to='/'
-                    onClick={() => setTab('Dashboard')}
-                    className={`transition-colors duration-100 ease-in ${
-                      tab == 'Dashboard'
-                        ? 'bg-gray-900 text-white'
-                        : 'text-gray-300 hover:bg-gray-700 hover:text-white'
-                    } px-3 py-2 rounded-md text-sm font-medium`}
+                    exact
+                    activeClassName='bg-gray-900 text-white hover:bg-gray-900'
+                    className='transition-colors duration-100 ease-in text-gray-300 hover:bg-gray-700 hover:text-white px-3 py-2 rounded-md text-sm font-medium'
                   >
                     Dashboard
-                  </Link>
-                  <Link
+                  </NavLink>
+                  <NavLink
                     to='/requests'
-                    onClick={() => setTab('Team')}
-                    className={`transition-colors duration-100 ease-in ${
-                      tab == 'Team'
-                        ? 'bg-gray-900 text-white'
-                        : 'text-gray-300 hover:bg-gray-700 hover:text-white'
-                    } px-3 py-2 rounded-md text-sm font-medium`}
+                    activeClassName='bg-gray-900 text-white hover:bg-gray-900'
+                    className='transition-colors duration-100 ease-in text-gray-300 hover:bg-gray-700 hover:text-white px-3 py-2 rounded-md text-sm font-medium'
                   >
                     Requests
-                  </Link>
-                  <Link
+                  </NavLink>
+                  <NavLink
                     to='/projects'
-                    onClick={() => setTab('Projects')}
-                    className={`transition-colors duration-100 ease-in ${
-                      tab == 'Projects'
-                        ? 'bg-gray-900 text-white'
-                        : 'text-gray-300 hover:bg-gray-700 hover:text-white'
-                    } px-3 py-2 rounded-md text-sm font-medium`}
+                    activeClassName='bg-gray-900 text-white hover:bg-gray-900'
+                    className='transition-colors duration-100 ease-in text-gray-300 hover:bg-gray-700 hover:text-white px-3 py-2 rounded-md text-sm font-medium'
                   >
                     Projects
-                  </Link>
-                  <Link
+                  </NavLink>
+                  <NavLink
                     to='/calendar'
-                    onClick={() => setTab('Calendar')}
-                    className={`transition-colors duration-100 ease-in ${
-                      tab == 'Calendar'
-                        ? 'bg-gray-900 text-white'
-                        : 'text-gray-300 hover:bg-gray-700 hover:text-white'
-                    } px-3 py-2 rounded-md text-sm font-medium`}
+                    activeClassName='bg-gray-900 text-white hover:bg-gray-900'
+                    className='transition-colors duration-100 ease-in text-gray-300 hover:bg-gray-700 hover:text-white px-3 py-2 rounded-md text-sm font-medium'
                   >
                     Calendar
-                  </Link>
+                  </NavLink>
                 </div>
               </div>
             </div>
@@ -177,37 +167,47 @@ export default function Navbar(props) {
         >
           <div className='px-2 pt-2 pb-3 space-y-1'>
             {/* Current: "bg-gray-900 text-white", Default: "text-gray-300 hover:bg-gray-700 hover:text-white"  */}
-            <a
-              href='#'
-              className='bg-gray-900 text-white block px-3 py-2 rounded-md text-base font-medium'
-            >
-              Dashboard
-            </a>
-            <a
-              href='#'
+            <NavLink
+              exact
+              to='/'
+              activeClassName='bg-gray-900 text-white'
               className='text-gray-300 hover:bg-gray-700 hover:text-white block px-3 py-2 rounded-md text-base font-medium'
             >
-              Team
-            </a>
-            <a
-              href='#'
+              Dashboard
+            </NavLink>
+            <NavLink
+              exact
+              to='/requests'
+              activeClassName='bg-gray-900 text-white'
+              className='text-gray-300 hover:bg-gray-700 hover:text-white block px-3 py-2 rounded-md text-base font-medium'
+            >
+              Requests
+            </NavLink>
+            <NavLink
+              exact
+              to='/projects'
+              activeClassName='bg-gray-900 text-white'
               className='text-gray-300 hover:bg-gray-700 hover:text-white block px-3 py-2 rounded-md text-base font-medium'
             >
               Projects
-            </a>
-            <a
-              href='#'
+            </NavLink>
+            <NavLink
+              exact
+              to='/calendar'
+              activeClassName='bg-gray-900 text-white'
               className='text-gray-300 hover:bg-gray-700 hover:text-white block px-3 py-2 rounded-md text-base font-medium'
             >
               Calendar
-            </a>
+            </NavLink>
           </div>
         </div>
       </nav>
       <Switch>
         <Route path='/calendar'></Route>
         <Route path='/projects'></Route>
-        <Route path='/requests'></Route>
+        <Route path='/requests'>
+          <Table contract={props.contract} user={props.user} />
+        </Route>
         <Route path='/'>
           {props.documents && <Dashboard documents={props.documents} />}
         </Route>

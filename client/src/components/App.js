@@ -3,7 +3,7 @@ import IdentityManagerContract from '../abis/IdentityManager.json';
 import getWeb3 from '../utils/getWeb3';
 
 import Navbar from './Navbar';
-import Dashboard from './Dashboard';
+import Spinner from './Spinner';
 
 class App extends Component {
   state = {
@@ -29,8 +29,7 @@ class App extends Component {
         deployedNetwork && deployedNetwork.address
       );
 
-      // Set web3, accounts, and contract to the state, and then proceed with an
-      // example of interacting with the contract's methods.
+      // Set web3, accounts, and contract to the state
       this.setState({ web3, accounts, contract: instance });
       this.fetchDocuments();
       window.ethereum.on(
@@ -51,6 +50,7 @@ class App extends Component {
     }
   };
 
+  // TODO: Call these functions inside respective components
   fetchDocuments = async () => {
     const { accounts, contract } = this.state;
 
@@ -58,20 +58,22 @@ class App extends Component {
     await contract.methods
       .getDocuments()
       .call({ from: accounts[0] })
-      .then((documents) => this.setState({ documents }));
+      .then((documents) => {
+        this.setState({ documents });
+      });
   };
 
   render() {
     if (!this.state.web3) {
-      return <div>Loading Web3, accounts, and contract...</div>;
+      return <Spinner />;
     }
     return (
       <div className='App'>
         <Navbar
           user={this.state.accounts[0]}
           documents={this.state.documents}
+          contract={this.state.contract}
         />
-        {/* {this.state.documents && <Dashboard documents={this.state.documents} />} */}
       </div>
     );
   }
