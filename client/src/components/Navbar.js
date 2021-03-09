@@ -209,7 +209,7 @@ export default function Navbar(props) {
           <Table contract={props.contract} user={props.user} />
         </Route>
         <Route path='/'>
-          {props.documents && <Dashboard documents={props.documents} />}
+          <Dashboard contract={props.contract} user={props.user} />
         </Route>
       </Switch>
     </Router>

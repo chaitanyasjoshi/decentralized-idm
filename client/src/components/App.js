@@ -10,7 +10,6 @@ class App extends Component {
     web3: null,
     accounts: null,
     contract: null,
-    documents: null,
   };
 
   componentDidMount = async () => {
@@ -31,14 +30,12 @@ class App extends Component {
 
       // Set web3, accounts, and contract to the state
       this.setState({ web3, accounts, contract: instance });
-      this.fetchDocuments();
       window.ethereum.on(
         'accountsChanged',
         async function (accounts) {
           // Not using returned accounts as it returns lowercase address
           const newAccounts = await web3.eth.getAccounts();
           this.setState({ accounts: newAccounts });
-          this.fetchDocuments();
         }.bind(this)
       );
     } catch (error) {
@@ -50,30 +47,13 @@ class App extends Component {
     }
   };
 
-  // TODO: Call these functions inside respective components
-  fetchDocuments = async () => {
-    const { accounts, contract } = this.state;
-
-    // Get documents from contract.
-    await contract.methods
-      .getDocuments()
-      .call({ from: accounts[0] })
-      .then((documents) => {
-        this.setState({ documents });
-      });
-  };
-
   render() {
     if (!this.state.web3) {
       return <Spinner />;
     }
     return (
       <div className='App'>
-        <Navbar
-          user={this.state.accounts[0]}
-          documents={this.state.documents}
-          contract={this.state.contract}
-        />
+        <Navbar user={this.state.accounts[0]} contract={this.state.contract} />
       </div>
     );
   }
