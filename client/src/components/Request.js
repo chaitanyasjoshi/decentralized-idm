@@ -24,14 +24,20 @@ export default function Request(props) {
       </td>
       <td className='px-6 py-4 whitespace-nowrap'>
         <div className='text-sm text-gray-900'>{props.docName}</div>
-        <div className='text-sm text-gray-500'>{props.properties}</div>
+        <div className='text-sm text-gray-500'>
+          {JSON.parse(props.properties)
+            .map((ele) => {
+              return ele.label;
+            })
+            .join(', ')}
+        </div>
       </td>
-      <td className='px-6 py-4 whitespace-nowrap'>
+      <td className='px-6 py-4 whitespace-nowrap text-center'>
         <span
           className={`px-2 py-1 inline-flex text-sm leading-5 font-semibold rounded-full ${
-            props.status == 'Requested'
+            props.status === 'Requested'
               ? 'bg-yellow-100 text-yellow-800'
-              : props.status == 'Approved'
+              : props.status === 'Approved'
               ? 'bg-green-100 text-green-800'
               : 'bg-red-100 text-red-800'
           }`}
@@ -40,12 +46,17 @@ export default function Request(props) {
         </span>
       </td>
 
-      <td className='pr-6 py-4 float-right whitespace-nowrap text-sm font-medium'>
-        {props.status == 'Requested' ? (
+      <td className='pr-6 py-4 text-center whitespace-nowrap text-sm font-medium'>
+        {props.status === 'Requested' ? (
           <button
             className='bg-green-100 p-1 rounded-full text-green-600 hover:text-green-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-green-800 focus:ring-white'
             onClick={() => {
-              props.updateStatus('Approved', props.requestor, props.docName);
+              props.updateStatus(
+                'Approved',
+                props.requestor,
+                props.docName,
+                JSON.parse(props.properties)
+              );
             }}
           >
             <span className='sr-only'>Approve</span>
@@ -68,11 +79,16 @@ export default function Request(props) {
         ) : (
           ''
         )}
-        {props.status == 'Requested' ? (
+        {props.status === 'Requested' ? (
           <button
             className='ml-3 bg-red-100 p-1 rounded-full text-red-600 hover:text-red-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-red-800 focus:ring-white'
             onClick={() => {
-              props.updateStatus('Declined', props.requestor, props.docName);
+              props.updateStatus(
+                'Declined',
+                props.requestor,
+                props.docName,
+                JSON.parse(props.properties)
+              );
             }}
           >
             <span className='sr-only'>Decline</span>
@@ -95,11 +111,16 @@ export default function Request(props) {
         ) : (
           ''
         )}
-        {props.status == 'Approved' ? (
+        {props.status === 'Approved' ? (
           <button
             className='ml-3 bg-red-100 p-1 rounded-full text-red-600 hover:text-red-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-red-800 focus:ring-white'
             onClick={() => {
-              props.updateStatus('Revoked', props.requestor, props.docName);
+              props.updateStatus(
+                'Revoked',
+                props.requestor,
+                props.docName,
+                JSON.parse(props.properties)
+              );
             }}
           >
             <span className='sr-only'>Revoke</span>

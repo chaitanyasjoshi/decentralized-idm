@@ -30,12 +30,6 @@ contract IdentityManager {
     address issuer
   );
 
-  event DocumentRetrived (
-    address issuer,
-    string name,
-    string data
-  );
-
   event TemplateCreated (
     address issuer,
     string name,
@@ -108,11 +102,10 @@ contract IdentityManager {
     return (_issuer, _name, _data);
   }
 
-  function getDocument(string memory _name, address _owner) public returns(address, string memory, string memory) {
-    for (uint256 index = 0; index < identities[_owner].length; index++) {
-      Document memory _docCopy = identities[_owner][index];
+  function getDocument(string memory _name) view public returns(address, string memory, string memory) {
+    for (uint256 index = 0; index < identities[msg.sender].length; index++) {
+      Document memory _docCopy = identities[msg.sender][index];
       if (compareStringsbyBytes(_name, _docCopy.name)) {
-        emit DocumentRetrived(_docCopy.issuer, _docCopy.name, _docCopy.data);
         return (_docCopy.issuer, _docCopy.name, _docCopy.data);
       } else {
         revert('User does not have specified document');
@@ -134,7 +127,7 @@ contract IdentityManager {
     emit RequestGenerated(msg.sender, _owner, _docName, _properties, 'Requested');
   }
 
-  function updateRequestStatus(address _verifier, string memory _docName, string memory _newStatus) public {
+  function updateRequestStatus(address _verifier, string memory _docName, string memory _newStatus, string memory _properties) public {
     require(_verifier != msg.sender, 'Verifier cannot update request status');
     require(bytes(_docName).length > 0);
 
@@ -146,7 +139,7 @@ contract IdentityManager {
 
     for (uint256 index = 0; index < verifierRequests[_verifier].length; index++) {
       if (compareStringsbyBytes(verifierRequests[_verifier][index].docName, _docName) && verifierRequests[_verifier][index].owner == msg.sender) {
-        verifierRequests[_verifier][index].status = _newStatus;
+        verifierRequests[_verifier][index] = Request(_verifier, msg.sender, _docName, _properties, _newStatus);
       }
     }
 
