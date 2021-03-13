@@ -122,6 +122,12 @@ contract IdentityManager {
     require(bytes(_docName).length > 0);
     require(bytes(_properties).length > 0);
 
+    for (uint256 index = 0; index < verifierRequests[msg.sender].length; index++) {
+      if (compareStringsbyBytes(verifierRequests[msg.sender][index].docName, _docName) && verifierRequests[msg.sender][index].owner == _owner) {
+        revert('You have already requested this document');
+      }
+    }
+
     ownerRequests[_owner].push(Request(msg.sender, _owner, _docName, _properties, 'Requested'));
     verifierRequests[msg.sender].push(Request(msg.sender, _owner, _docName, _properties, 'Requested'));
     emit RequestGenerated(msg.sender, _owner, _docName, _properties, 'Requested');
@@ -134,12 +140,14 @@ contract IdentityManager {
     for (uint256 index = 0; index < ownerRequests[msg.sender].length; index++) {
       if (compareStringsbyBytes(ownerRequests[msg.sender][index].docName, _docName) && ownerRequests[msg.sender][index].requestor == _verifier) {
         ownerRequests[msg.sender][index].status = _newStatus;
+        break;
       }
     }
 
     for (uint256 index = 0; index < verifierRequests[_verifier].length; index++) {
       if (compareStringsbyBytes(verifierRequests[_verifier][index].docName, _docName) && verifierRequests[_verifier][index].owner == msg.sender) {
         verifierRequests[_verifier][index] = Request(_verifier, msg.sender, _docName, _properties, _newStatus);
+        break;
       }
     }
 

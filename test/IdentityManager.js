@@ -104,14 +104,7 @@ contract('IdentityManager', ([issuer, owner, verifier]) => {
       const result = await identityManager.getVerifierRequests({
         from: verifier,
       });
-      const {
-        0: _requestor,
-        1: _owner,
-        2: _docName,
-        3: _properties,
-        4: _status,
-      } = result;
-      assert.equal(_requestor, verifier, 'Verification requestor is correct');
+      const { 0: _owner, 1: _docName, 2: _properties, 3: _status } = result;
       assert.equal(_owner, owner, 'Document owner is correct');
       assert.equal(_docName, 'Aadhar', 'Document name is correct');
       assert.equal(
@@ -125,11 +118,13 @@ contract('IdentityManager', ([issuer, owner, verifier]) => {
 
   describe('Identity owner', async () => {
     it('Retrives documents', async () => {
-      const result = await identityManager.getDocument('Aadhar', owner);
-      const event = result.logs[0].args;
-      assert.equal(event.issuer, issuer, 'Document issuer is correct');
-      assert.equal(event.name, 'Aadhar', 'Document name is correct');
-      assert.equal(event.data, 'Document data', 'Document data is correct');
+      const result = await identityManager.getDocument('Aadhar', {
+        from: owner,
+      });
+      const { 0: _issuer, 1: _docName, 2: _data } = result;
+      assert.equal(_issuer, issuer, 'Document issuer is correct');
+      assert.equal(_docName, 'Aadhar', 'Document name is correct');
+      assert.equal(_data, 'Document data', 'Document data is correct');
     });
 
     it('Retrives document count', async () => {
@@ -147,15 +142,8 @@ contract('IdentityManager', ([issuer, owner, verifier]) => {
 
     it('View verification requests', async () => {
       const result = await identityManager.getOwnerRequests({ from: owner });
-      const {
-        0: _requestor,
-        1: _owner,
-        2: _docName,
-        3: _properties,
-        4: _status,
-      } = result;
+      const { 0: _requestor, 1: _docName, 2: _properties, 3: _status } = result;
       assert.equal(_requestor, verifier, 'Verification requestor is correct');
-      assert.equal(_owner, owner, 'Document owner is correct');
       assert.equal(_docName, 'Aadhar', 'Document name is correct');
       assert.equal(
         _properties,
@@ -170,6 +158,7 @@ contract('IdentityManager', ([issuer, owner, verifier]) => {
         verifier,
         'Aadhar',
         'Approved',
+        'Document properties',
         { from: owner }
       );
 
