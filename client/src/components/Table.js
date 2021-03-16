@@ -14,8 +14,6 @@ export default class Table extends Component {
       user: null,
       contract: null,
       requests: null,
-      docData: [],
-      verifiedProperties: [],
     };
     this.createRequests = this.createRequests.bind(this);
     this.fetchRequests = this.fetchRequests.bind(this);
@@ -121,41 +119,36 @@ export default class Table extends Component {
   updateStatus = async (newStatus, requestor, docName, properties) => {
     try {
       if (newStatus === 'Approved') {
-        await this.fetchDocumentData(docName).then(() => {
-          this.verifyProperties(properties);
-          this.updateRequest(requestor, docName, newStatus);
-        });
+        await this.fetchDocumentData(newStatus, requestor, docName, properties);
       } else {
-        this.setState({ verifiedProperties: properties });
-        this.updateRequest(requestor, docName, newStatus);
+        this.updateRequest(requestor, docName, newStatus, properties);
       }
     } catch (error) {
       console.log(error);
     }
   };
 
-  verifyProperties(properties) {
+  verifyProperties(newStatus, requestor, docName, properties, docData) {
     let verifiedProperties = [];
     for (let i = 0; i < properties.length; i++) {
       let label = properties[i].label;
       let expValue = properties[i].expValue;
 
-      for (let index = 0; index < this.state.docData.length; index++) {
+      for (let index = 0; index < docData.length; index++) {
         if (
           (expValue === '' || expValue === undefined) &&
-          label === this.state.docData[index].fieldLabel
+          label === docData[index].fieldLabel
         ) {
           verifiedProperties.push({
             label,
             expValue,
-            value: this.state.docData[index].fieldValue,
+            value: docData[index].fieldValue,
             verified: true,
           });
           break;
-        } else if (label === this.state.docData[index].fieldLabel) {
+        } else if (label === docData[index].fieldLabel) {
           if (
-            expValue.toLowerCase() ===
-            this.state.docData[index].fieldValue.toLowerCase()
+            expValue.toLowerCase() === docData[index].fieldValue.toLowerCase()
           ) {
             verifiedProperties.push({
               label,
@@ -177,19 +170,33 @@ export default class Table extends Component {
       }
     }
 
-    console.log(verifiedProperties);
-    this.setState({ verifiedProperties });
+    this.updateRequest(requestor, docName, newStatus, verifiedProperties);
   }
 
-  fetchDocumentData = async (docName) => {
-    let { 2: data } = await this.state.contract.methods
+  fetchDocumentData = async (newStatus, requestor, docName, properties) => {
+    await this.state.contract.methods
       .getDocument(docName)
-      .call({ from: this.state.user });
-
-    this.setState({ docData: JSON.parse(data) });
+      .call({ from: this.state.user })
+      .then(({ 2: data }) => {
+        window.ethereum
+          .request({
+            method: 'eth_decrypt',
+            params: [data, this.state.user],
+          })
+          .then((decryptedMessage) => {
+            this.verifyProperties(
+              newStatus,
+              requestor,
+              docName,
+              properties,
+              JSON.parse(decryptedMessage)
+            );
+          })
+          .catch((error) => console.log(error.message));
+      });
   };
 
-  updateRequest = async (requestor, docName, newStatus) => {
+  updateRequest = async (requestor, docName, newStatus, verifiedProperties) => {
     try {
       await this.state.contract.methods
         .getEncryptionPublicKey(requestor)
@@ -200,7 +207,7 @@ export default class Table extends Component {
               JSON.stringify(
                 encrypt(
                   encryptionPublicKey,
-                  { data: JSON.stringify(this.state.verifiedProperties) },
+                  { data: JSON.stringify(verifiedProperties) },
                   'x25519-xsalsa20-poly1305'
                 )
               ),

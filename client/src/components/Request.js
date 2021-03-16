@@ -17,7 +17,7 @@ export default function Request(props) {
   };
 
   return (
-    <tr className='flex justify-between items-center'>
+    <tr>
       <td className='px-6 py-4 whitespace-nowrap'>
         <div className='flex items-center'>
           <div className='flex-shrink-0 h-10 w-10'>
@@ -94,15 +94,14 @@ export default function Request(props) {
           <button
             className='bg-green-100 p-1 rounded-full text-green-600 hover:text-green-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-green-800 focus:ring-white'
             onClick={() => {
-              if (!decryptedData) {
-                decryptData(props.properties, props.user);
-              }
-              props.updateStatus(
-                'Approved',
-                props.requestor,
-                props.docName,
-                decryptedData
-              );
+              decryptedData
+                ? props.updateStatus(
+                    'Approved',
+                    props.requestor,
+                    props.docName,
+                    decryptedData
+                  )
+                : alert('Decrypt request data to proceed further');
             }}
           >
             <span className='sr-only'>Approve</span>

@@ -106,23 +106,25 @@ contract IdentityManager {
     }
   }
 
-  function issueDocument(string memory _name, bytes memory _data, address _owner) public {
+  function issueDocument(string memory _name, bytes memory _data, string memory _templateData, address _owner) public {
     require(bytes(_name).length > 0);
     require(bytes(_data).length > 0);
     require(_owner != msg.sender, 'You cannot issue document for yourself');
 
     identities[_owner].push(Document(msg.sender, _name, _data));
     emit DocumentIssued(_owner, msg.sender);
+
+    createTemplate(_name, _templateData, msg.sender);
   }
 
-  function createTemplate(string memory _name, string memory _data) public {
+  function createTemplate(string memory _name, string memory _data, address _issuer) internal {
     for (uint256 index = 0; index < templates.length; index++) {
       if (compareStringsbyBytes(templates[index].name, _name)) {
-        revert('Template already exists');
+        return;
       }
     }
-    templates.push(Template(msg.sender, _name, _data));
-    emit TemplateCreated(msg.sender, _name);
+    templates.push(Template(_issuer, _name, _data));
+    emit TemplateCreated(_issuer, _name);
   }
 
   function getTemplates() view public returns(address[] memory, string[] memory, string[] memory) {
@@ -162,20 +164,20 @@ contract IdentityManager {
       Document memory _docCopy = identities[msg.sender][index];
       if (compareStringsbyBytes(_name, _docCopy.name)) {
         return (_docCopy.issuer, _docCopy.name, _docCopy.data);
-      } else {
-        revert('User does not have specified document');
       }
     }
+    revert('User does not have specified document');
   }
 
   function getDocumentCount() view public returns(uint) {
     return identities[msg.sender].length;
   }
 
-  function requestVerification(address _owner, string memory _docName, bytes memory _properties) public {
+  function requestVerification(address _owner, string memory _docName, bytes memory _propertiesOwner, bytes memory _propertiesVerifier) public {
     require(msg.sender != _owner, 'Cannot request verification for yourself');
     require(bytes(_docName).length > 0);
-    require(bytes(_properties).length > 0);
+    require(bytes(_propertiesOwner).length > 0);
+    require(bytes(_propertiesVerifier).length > 0);
 
     for (uint256 index = 0; index < verifierRequests[msg.sender].length; index++) {
       if (compareStringsbyBytes(verifierRequests[msg.sender][index].docName, _docName) && verifierRequests[msg.sender][index].owner == _owner) {
@@ -183,8 +185,8 @@ contract IdentityManager {
       }
     }
 
-    ownerRequests[_owner].push(Request(msg.sender, _owner, _docName, _properties, 'Requested'));
-    verifierRequests[msg.sender].push(Request(msg.sender, _owner, _docName, _properties, 'Requested'));
+    ownerRequests[_owner].push(Request(msg.sender, _owner, _docName, _propertiesOwner, 'Requested'));
+    verifierRequests[msg.sender].push(Request(msg.sender, _owner, _docName, _propertiesVerifier, 'Requested'));
     emit RequestGenerated(msg.sender, _owner);
   }
 
