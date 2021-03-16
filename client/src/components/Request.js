@@ -1,9 +1,23 @@
-import React from 'react';
+import { React, useState } from 'react';
 import multiavatar from '@multiavatar/multiavatar';
 
 export default function Request(props) {
+  const [decryptedData, setDecryptedData] = useState(null);
+
+  const decryptData = (data, user) => {
+    window.ethereum
+      .request({
+        method: 'eth_decrypt',
+        params: [data, user],
+      })
+      .then((decryptedMessage) => {
+        setDecryptedData(JSON.parse(decryptedMessage));
+      })
+      .catch((error) => console.log(error.message));
+  };
+
   return (
-    <tr>
+    <tr className='flex justify-between items-center'>
       <td className='px-6 py-4 whitespace-nowrap'>
         <div className='flex items-center'>
           <div className='flex-shrink-0 h-10 w-10'>
@@ -22,16 +36,45 @@ export default function Request(props) {
           </div>
         </div>
       </td>
-      <td className='px-6 py-4 whitespace-nowrap'>
-        <div className='text-sm text-gray-900'>{props.docName}</div>
-        <div className='text-sm text-gray-500'>
-          {JSON.parse(props.properties)
-            .map((ele) => {
-              return ele.label;
-            })
-            .join(', ')}
-        </div>
+      <td className='px-6 py-4 text-center whitespace-nowrap'>
+        <div className='text-sm font-medium text-gray-900'>{props.docName}</div>
       </td>
+      {decryptedData ? (
+        <td className='px-6 py-4 text-center whitespace-nowrap'>
+          <div className='text-sm text-gray-500'>
+            {decryptedData
+              .map((ele) => {
+                return ele.label;
+              })
+              .join(', ')}
+          </div>
+        </td>
+      ) : (
+        <td className='px-6 py-4 whitespace-nowrap'>
+          <button
+            name='decrypt'
+            id='decrypt'
+            onClick={() => {
+              decryptData(props.properties, props.user);
+            }}
+            className='flex items-center justify-between py-1 px-2 m-auto border border-transparent shadow-sm text-sm rounded-full text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500'
+          >
+            <svg
+              className='h-4 w-4'
+              xmlns='http://www.w3.org/2000/svg'
+              viewBox='0 0 20 20'
+              fill='currentColor'
+            >
+              <path
+                fillRule='evenodd'
+                d='M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z'
+                clipRule='evenodd'
+              />
+            </svg>
+            <span className='ml-1'>Decrypt request</span>
+          </button>
+        </td>
+      )}
       <td className='px-6 py-4 whitespace-nowrap text-center'>
         <span
           className={`px-2 py-1 inline-flex text-sm leading-5 font-semibold rounded-full ${
@@ -46,16 +89,19 @@ export default function Request(props) {
         </span>
       </td>
 
-      <td className='pr-6 py-4 text-center whitespace-nowrap text-sm font-medium'>
+      <td className='pr-6 py-4 text-right whitespace-nowrap'>
         {props.status === 'Requested' ? (
           <button
             className='bg-green-100 p-1 rounded-full text-green-600 hover:text-green-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-green-800 focus:ring-white'
             onClick={() => {
+              if (!decryptedData) {
+                decryptData(props.properties, props.user);
+              }
               props.updateStatus(
                 'Approved',
                 props.requestor,
                 props.docName,
-                JSON.parse(props.properties)
+                decryptedData
               );
             }}
           >
