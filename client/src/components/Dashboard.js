@@ -15,42 +15,30 @@ export default class Dashboard extends Component {
   componentDidMount() {
     if (!auth.getContract()) {
       auth.init().then(() => {
-        this.setState(
-          { user: auth.getUser(), contract: auth.getContract() },
-          () => {
-            this.fetchDocuments();
-            this.state.contract.events.DocumentIssued(
-              { owner: this.state.user },
-              (err, result) => {
-                if (err) {
-                  return console.error(err);
-                }
-                this.fetchDocuments();
-              }
-            );
-          }
-        );
+        this.initialize();
       });
     } else {
-      this.setState(
-        { user: auth.getUser(), contract: auth.getContract() },
-        () => {
-          this.fetchDocuments();
-          this.state.contract.events.DocumentIssued(
-            { owner: this.state.user },
-            (err, result) => {
-              if (err) {
-                return console.error(err);
-              }
-              this.fetchDocuments();
-            }
-          );
-        }
-      );
+      this.initialize();
     }
   }
 
-  createCards() {}
+  initialize = () => {
+    this.setState(
+      { user: auth.getUser(), contract: auth.getContract() },
+      () => {
+        this.fetchDocuments();
+        this.state.contract.events.DocumentIssued(
+          { owner: this.state.user },
+          (err, result) => {
+            if (err) {
+              return console.error(err);
+            }
+            this.fetchDocuments();
+          }
+        );
+      }
+    );
+  };
 
   fetchDocuments = async () => {
     // Get documents from contract.

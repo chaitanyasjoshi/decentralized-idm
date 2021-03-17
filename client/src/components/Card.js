@@ -4,11 +4,11 @@ import gradient from 'random-gradient';
 export default function Card(props) {
   const [decryptedData, setDecryptedData] = useState(null);
 
-  const decryptData = (data, user) => {
+  const decryptData = () => {
     window.ethereum
       .request({
         method: 'eth_decrypt',
-        params: [data, user],
+        params: [props.data, props.user],
       })
       .then((decryptedMessage) => {
         setDecryptedData(JSON.parse(decryptedMessage));
@@ -44,9 +44,7 @@ export default function Card(props) {
               <button
                 name='decrypt'
                 id='decrypt'
-                onClick={() => {
-                  decryptData(props.data, props.user);
-                }}
+                onClick={decryptData}
                 className='flex items-center justify-between p-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500'
               >
                 <svg

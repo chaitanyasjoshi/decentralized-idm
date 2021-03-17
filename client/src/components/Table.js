@@ -13,105 +13,66 @@ export default class Table extends Component {
     this.state = {
       user: null,
       contract: null,
-      requests: null,
+      requests: [],
     };
-    this.createRequests = this.createRequests.bind(this);
-    this.fetchRequests = this.fetchRequests.bind(this);
-    this.updateStatus = this.updateStatus.bind(this);
-    this.verifyProperties = this.verifyProperties.bind(this);
-    this.fetchDocumentData = this.fetchDocumentData.bind(this);
-    this.updateRequest = this.updateRequest.bind(this);
   }
 
   componentDidMount = () => {
     if (!auth.getContract()) {
       auth.init().then(() => {
-        this.setState(
-          { user: auth.getUser(), contract: auth.getContract() },
-          () => {
-            this.fetchRequests();
-
-            this.state.contract.events.RequestStatusUpdated(
-              { owner: this.state.user },
-              (err, result) => {
-                if (err) {
-                  return console.error(err);
-                }
-                this.fetchRequests();
-              }
-            );
-
-            this.state.contract.events.RequestGenerated(
-              { owner: this.state.user },
-              (err, result) => {
-                if (err) {
-                  return console.error(err);
-                }
-                this.fetchRequests();
-              }
-            );
-          }
-        );
+        this.initialize();
       });
     } else {
-      this.setState(
-        { user: auth.getUser(), contract: auth.getContract() },
-        () => {
-          this.fetchRequests();
-
-          this.state.contract.events.RequestStatusUpdated(
-            { owner: this.state.user },
-            (err, result) => {
-              if (err) {
-                return console.error(err);
-              }
-              this.fetchRequests();
-            }
-          );
-
-          this.state.contract.events.RequestGenerated(
-            { owner: this.state.user },
-            (err, result) => {
-              if (err) {
-                return console.error(err);
-              }
-              this.fetchRequests();
-            }
-          );
-        }
-      );
+      this.initialize();
     }
   };
 
-  createRequests() {
-    const req = [];
-    if (this.state.requests != null) {
-      const {
-        0: requestor,
-        1: docName,
-        2: properties,
-        3: status,
-      } = this.state.requests;
+  initialize = () => {
+    this.setState(
+      { user: auth.getUser(), contract: auth.getContract() },
+      () => {
+        this.fetchRequests();
 
-      for (let index = 0; index < requestor.length; index++) {
-        let ele = [
-          requestor[index],
-          docName[index],
-          properties[index],
-          status[index],
-        ];
-        req.push(ele);
+        this.state.contract.events.RequestStatusUpdated(
+          { owner: this.state.user },
+          (err, result) => {
+            if (err) {
+              return console.error(err);
+            }
+            this.fetchRequests();
+          }
+        );
+
+        this.state.contract.events.RequestGenerated(
+          { owner: this.state.user },
+          (err, result) => {
+            if (err) {
+              return console.error(err);
+            }
+            this.fetchRequests();
+          }
+        );
       }
-    }
-    return req;
-  }
+    );
+  };
 
   fetchRequests = async () => {
     // Get requests from contract.
     await this.state.contract.methods
       .getOwnerRequests()
       .call({ from: this.state.user })
-      .then((requests) => {
+      .then(({ 0: requestor, 1: docName, 2: properties, 3: status }) => {
+        const requests = [];
+
+        for (let index = 0; index < requestor.length; index++) {
+          let ele = [
+            requestor[index],
+            docName[index],
+            properties[index],
+            status[index],
+          ];
+          requests.push(ele);
+        }
         this.setState({ requests });
       });
   };
@@ -238,7 +199,7 @@ export default class Table extends Component {
               <div className='shadow overflow-hidden border-b border-gray-200 sm:rounded-lg'>
                 <table className='min-w-full divide-y divide-gray-200'>
                   <tbody className='bg-white divide-y divide-gray-200'>
-                    {this.createRequests().map((ele, i) => {
+                    {this.state.requests.map((ele, i) => {
                       return (
                         <Request
                           key={i}
