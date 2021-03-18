@@ -1,8 +1,14 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import auth from '../utils/auth';
 
 export default function Authentication(props) {
   const [username, setUsername] = useState('');
+
+  useEffect(() => {
+    if (auth.isAuthenticated()) {
+      props.history.push('/dashboard');
+    }
+  }, []);
 
   const handleUsernameChange = (event) => {
     setUsername(event.target.value);
