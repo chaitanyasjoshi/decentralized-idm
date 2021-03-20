@@ -1,8 +1,11 @@
 import React, { Component } from 'react';
+import ReactNotification, { store } from 'react-notifications-component';
 import { bufferToHex } from 'ethereumjs-util';
 import { encrypt } from 'eth-sig-util';
 
 import auth from '../utils/auth';
+import 'react-notifications-component/dist/theme.css';
+import 'animate.css';
 
 import Request from './Request';
 import Navbar from './Navbar';
@@ -33,18 +36,8 @@ export default class Table extends Component {
       () => {
         this.fetchRequests();
 
-        this.state.contract.events.RequestStatusUpdated(
-          { owner: this.state.user },
-          (err, result) => {
-            if (err) {
-              return console.error(err);
-            }
-            this.fetchRequests();
-          }
-        );
-
         this.state.contract.events.RequestGenerated(
-          { owner: this.state.user },
+          { filter: { owner: this.state.user } },
           (err, result) => {
             if (err) {
               return console.error(err);
@@ -180,7 +173,19 @@ export default class Table extends Component {
             .updateRequestStatus(requestor, docName, newStatus, encryptedData)
             .send({ from: this.state.user }, (err, txnHash) => {
               if (err) {
-                alert(`User denied transaction signature`);
+                store.addNotification({
+                  title: 'Transaction failed',
+                  message: 'Sign the transaction to update request status',
+                  type: 'danger', // 'default', 'success', 'info', 'warning'
+                  container: 'top-right', // where to position the notifications
+                  animationIn: ['animate__animated', 'animate__fadeInDown'], // animate.css classes that's applied
+                  animationOut: ['animate__animated', 'animate__fadeOutDown'], // animate.css classes that's applied
+                  dismiss: {
+                    duration: 3000,
+                    showIcon: true,
+                    pauseOnHover: true,
+                  },
+                });
               }
             });
         });
@@ -193,6 +198,7 @@ export default class Table extends Component {
     return (
       <div>
         <Navbar user={this.state.user} history={this.props.history} />
+        <ReactNotification className='font-Poppins' />
         <div className='flex flex-col mt-10 max-w-7xl mx-auto px-2 sm:px-6 lg:px-8 font-Poppins'>
           <div className='-my-2 overflow-x-auto sm:-mx-6 lg:-mx-8'>
             <div className='py-2 align-middle inline-block min-w-full sm:px-6 lg:px-8'>
@@ -203,6 +209,7 @@ export default class Table extends Component {
                       return (
                         <Request
                           key={i}
+                          store={store}
                           user={this.state.user}
                           requestor={ele[0]}
                           docName={ele[1]}

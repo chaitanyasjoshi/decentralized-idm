@@ -93,23 +93,23 @@ export default function Navbar(props) {
             </div>
           </div>
           <div className='absolute inset-y-0 right-0 flex items-center pr-2 sm:static sm:inset-auto sm:ml-6 sm:pr-0'>
-            <p className='hidden sm:block text-white text-sm font-medium'>
-              {props.user}
-            </p>
-            <div className='ml-3 relative'>
-              <button
-                className='bg-gray-800 flex text-sm rounded-full focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-800 focus:ring-white'
-                id='user-profile'
-                aria-haspopup='true'
-              >
-                <span className='sr-only'>Profile</span>
+            <div className='flex items-center'>
+              <div className='mr-4'>
+                <div className='text-sm font-medium text-white'>
+                  {props.user}
+                </div>
+                <div className='text-sm text-right text-gray-300'>
+                  {auth.getUsername()}
+                </div>
+              </div>
+              <div className='flex-shrink-0 h-10 w-10'>
                 <span
-                  className='h-8 w-8 rounded-full'
+                  className='h-10 w-10 rounded-full'
                   dangerouslySetInnerHTML={{
                     __html: multiavatar(props.user),
                   }}
                 />
-              </button>
+              </div>
             </div>
 
             <div className='ml-3 relative'>

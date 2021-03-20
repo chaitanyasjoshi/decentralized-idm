@@ -1,6 +1,9 @@
 import React, { Component } from 'react';
+import ReactNotification, { store } from 'react-notifications-component';
 
 import auth from '../utils/auth';
+import 'react-notifications-component/dist/theme.css';
+import 'animate.css';
 
 import Navbar from './Navbar';
 import Card from './Card';
@@ -28,7 +31,7 @@ export default class Dashboard extends Component {
       () => {
         this.fetchDocuments();
         this.state.contract.events.DocumentIssued(
-          { owner: this.state.user },
+          { filter: { owner: this.state.user } },
           (err, result) => {
             if (err) {
               return console.error(err);
@@ -60,11 +63,13 @@ export default class Dashboard extends Component {
     return (
       <div>
         <Navbar user={this.state.user} history={this.props.history} />
+        <ReactNotification className='font-Poppins' />
         <div className='mt-6 flex flex-wrap max-w-7xl mx-auto'>
-          {this.state.documents.map((ele) => {
+          {this.state.documents.map((ele, i) => {
             return (
               <Card
-                key={ele[1]}
+                key={i}
+                store={store}
                 issuer={ele[0]}
                 name={ele[1]}
                 data={ele[2]}

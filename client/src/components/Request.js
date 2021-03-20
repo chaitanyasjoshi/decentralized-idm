@@ -1,6 +1,9 @@
 import { React, useState } from 'react';
 import multiavatar from '@multiavatar/multiavatar';
 
+import 'react-notifications-component/dist/theme.css';
+import 'animate.css';
+
 export default function Request(props) {
   const [decryptedData, setDecryptedData] = useState(null);
 
@@ -12,8 +15,35 @@ export default function Request(props) {
       })
       .then((decryptedMessage) => {
         setDecryptedData(JSON.parse(decryptedMessage));
+        props.store.addNotification({
+          title: 'Decryption successful',
+          message: `Request decrypted successfully`,
+          type: 'success', // 'default', 'success', 'info', 'warning'
+          container: 'top-right', // where to position the notifications
+          animationIn: ['animate__animated', 'animate__fadeInDown'], // animate.css classes that's applied
+          animationOut: ['animate__animated', 'animate__fadeOutDown'], // animate.css classes that's applied
+          dismiss: {
+            duration: 2000,
+            showIcon: true,
+            pauseOnHover: true,
+          },
+        });
       })
-      .catch((error) => console.log(error.message));
+      .catch((error) => {
+        props.store.addNotification({
+          title: 'Decryption failed',
+          message: 'Please sign the transaction to decrypt the request',
+          type: 'danger', // 'default', 'success', 'info', 'warning'
+          container: 'top-right', // where to position the notifications
+          animationIn: ['animate__animated', 'animate__fadeInDown'], // animate.css classes that's applied
+          animationOut: ['animate__animated', 'animate__fadeOutDown'], // animate.css classes that's applied
+          dismiss: {
+            duration: 2000,
+            showIcon: true,
+            pauseOnHover: true,
+          },
+        });
+      });
   };
 
   return (
@@ -36,18 +66,19 @@ export default function Request(props) {
           </div>
         </div>
       </td>
-      <td className='px-6 py-4 text-center whitespace-nowrap'>
+      <td className='px-6 py-4 whitespace-nowrap'>
         <div className='text-sm font-medium text-gray-900'>{props.docName}</div>
       </td>
       {decryptedData ? (
-        <td className='px-6 py-4 text-center whitespace-nowrap'>
-          <div className='text-sm text-gray-500'>
-            {decryptedData
-              .map((ele) => {
-                return ele.label;
-              })
-              .join(', ')}
-          </div>
+        <td className='px-6 py-4 whitespace-nowrap'>
+          {decryptedData.map((ele, i) => (
+            <div key={i} className='grid grid-cols-2 gap-6'>
+              <p className='text-sm text-gray-600 col-span-1'>{ele.label}</p>
+              <p className='text-sm text-gray-600 text-right col-span-1'>
+                {ele.expValue ? 'Verify' : 'Access'}
+              </p>
+            </div>
+          ))}
         </td>
       ) : (
         <td className='px-6 py-4 whitespace-nowrap'>
@@ -99,7 +130,19 @@ export default function Request(props) {
                     props.docName,
                     decryptedData
                   )
-                : alert('Decrypt request data to proceed further');
+                : props.store.addNotification({
+                    title: 'Status updation failed',
+                    message: 'Decrypt request data to update request status',
+                    type: 'danger', // 'default', 'success', 'info', 'warning'
+                    container: 'top-right', // where to position the notifications
+                    animationIn: ['animate__animated', 'animate__fadeInDown'], // animate.css classes that's applied
+                    animationOut: ['animate__animated', 'animate__fadeOutDown'], // animate.css classes that's applied
+                    dismiss: {
+                      duration: 3000,
+                      showIcon: true,
+                      pauseOnHover: true,
+                    },
+                  });
             }}
           >
             <span className='sr-only'>Approve</span>
@@ -126,12 +169,26 @@ export default function Request(props) {
           <button
             className='ml-3 bg-red-100 p-1 rounded-full text-red-600 hover:text-red-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-red-800 focus:ring-white'
             onClick={() => {
-              props.updateStatus(
-                'Declined',
-                props.requestor,
-                props.docName,
-                JSON.parse(props.properties)
-              );
+              decryptedData
+                ? props.updateStatus(
+                    'Declined',
+                    props.requestor,
+                    props.docName,
+                    decryptedData
+                  )
+                : props.store.addNotification({
+                    title: 'Status updation failed',
+                    message: 'Decrypt request data to update request status',
+                    type: 'danger', // 'default', 'success', 'info', 'warning'
+                    container: 'top-right', // where to position the notifications
+                    animationIn: ['animate__animated', 'animate__fadeInDown'], // animate.css classes that's applied
+                    animationOut: ['animate__animated', 'animate__fadeOutDown'], // animate.css classes that's applied
+                    dismiss: {
+                      duration: 3000,
+                      showIcon: true,
+                      pauseOnHover: true,
+                    },
+                  });
             }}
           >
             <span className='sr-only'>Decline</span>
@@ -158,12 +215,26 @@ export default function Request(props) {
           <button
             className='ml-3 bg-red-100 p-1 rounded-full text-red-600 hover:text-red-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-red-800 focus:ring-white'
             onClick={() => {
-              props.updateStatus(
-                'Revoked',
-                props.requestor,
-                props.docName,
-                JSON.parse(props.properties)
-              );
+              decryptedData
+                ? props.updateStatus(
+                    'Revoked',
+                    props.requestor,
+                    props.docName,
+                    decryptedData
+                  )
+                : props.store.addNotification({
+                    title: 'Status updation failed',
+                    message: 'Decrypt request data to update request status',
+                    type: 'danger', // 'default', 'success', 'info', 'warning'
+                    container: 'top-right', // where to position the notifications
+                    animationIn: ['animate__animated', 'animate__fadeInDown'], // animate.css classes that's applied
+                    animationOut: ['animate__animated', 'animate__fadeOutDown'], // animate.css classes that's applied
+                    dismiss: {
+                      duration: 3000,
+                      showIcon: true,
+                      pauseOnHover: true,
+                    },
+                  });
             }}
           >
             <span className='sr-only'>Revoke</span>

@@ -12,8 +12,35 @@ export default function Card(props) {
       })
       .then((decryptedMessage) => {
         setDecryptedData(JSON.parse(decryptedMessage));
+        props.store.addNotification({
+          title: 'Decryption successful',
+          message: `Document decrypted successfully`,
+          type: 'success', // 'default', 'success', 'info', 'warning'
+          container: 'top-right', // where to position the notifications
+          animationIn: ['animate__animated', 'animate__fadeInDown'], // animate.css classes that's applied
+          animationOut: ['animate__animated', 'animate__fadeOutDown'], // animate.css classes that's applied
+          dismiss: {
+            duration: 2000,
+            showIcon: true,
+            pauseOnHover: true,
+          },
+        });
       })
-      .catch((error) => console.log(error.message));
+      .catch((error) => {
+        props.store.addNotification({
+          title: 'Decryption failed',
+          message: 'Please sign the transaction to decrypt the document',
+          type: 'danger', // 'default', 'success', 'info', 'warning'
+          container: 'top-right', // where to position the notifications
+          animationIn: ['animate__animated', 'animate__fadeInDown'], // animate.css classes that's applied
+          animationOut: ['animate__animated', 'animate__fadeOutDown'], // animate.css classes that's applied
+          dismiss: {
+            duration: 2000,
+            showIcon: true,
+            pauseOnHover: true,
+          },
+        });
+      });
   };
 
   return (

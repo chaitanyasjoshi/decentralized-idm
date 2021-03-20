@@ -1,5 +1,9 @@
 import React, { useState, useEffect } from 'react';
+import ReactNotification, { store } from 'react-notifications-component';
+
 import auth from '../utils/auth';
+import 'react-notifications-component/dist/theme.css';
+import 'animate.css';
 
 export default function Authentication(props) {
   const [username, setUsername] = useState('');
@@ -8,7 +12,40 @@ export default function Authentication(props) {
     if (auth.isAuthenticated()) {
       props.history.push('/dashboard');
     }
+    if (!auth.getContract()) {
+      auth.init().then(() => {
+        initialize();
+      });
+    } else {
+      initialize();
+    }
   }, []);
+
+  const initialize = () => {
+    auth
+      .getContract()
+      .events.UserRegistered(
+        { filter: { user: auth.getUser() } },
+        (err, result) => {
+          if (err) {
+            return console.error(err);
+          }
+          store.addNotification({
+            title: 'Register',
+            message: 'Registered successfully',
+            type: 'success', // 'default', 'success', 'info', 'warning'
+            container: 'top-right', // where to position the notifications
+            animationIn: ['animate__animated', 'animate__fadeInDown'], // animate.css classes that's applied
+            animationOut: ['animate__animated', 'animate__fadeOutDown'], // animate.css classes that's applied
+            dismiss: {
+              duration: 2000,
+              showIcon: true,
+              pauseOnHover: true,
+            },
+          });
+        }
+      );
+  };
 
   const handleUsernameChange = (event) => {
     setUsername(event.target.value);
@@ -37,15 +74,30 @@ export default function Authentication(props) {
   };
 
   const handleLogin = () => {
-    auth.login(username).then(() => {
+    auth.login(username).then((message) => {
       if (auth.isAuthenticated()) {
         props.history.push('/dashboard');
+      } else {
+        store.addNotification({
+          title: 'Login failed',
+          message: message,
+          type: 'danger', // 'default', 'success', 'info', 'warning'
+          container: 'top-right', // where to position the notifications
+          animationIn: ['animate__animated', 'animate__fadeInDown'], // animate.css classes that's applied
+          animationOut: ['animate__animated', 'animate__fadeOutDown'], // animate.css classes that's applied
+          dismiss: {
+            duration: 2000,
+            showIcon: true,
+            pauseOnHover: true,
+          },
+        });
       }
     });
   };
 
   return (
     <div className='min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8 font-Poppins'>
+      <ReactNotification />
       <div className='max-w-md w-full space-y-8'>
         <div>
           <img

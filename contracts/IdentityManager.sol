@@ -7,6 +7,7 @@ contract IdentityManager {
   struct User {
     string encryptionPublicKey;
     string entity;
+    string username;
   }
 
   struct Document {
@@ -36,15 +37,13 @@ contract IdentityManager {
   mapping(address => Request[]) verifierRequests;
   Template[] templates;
 
-  event UserAuthenticated (
-    string status,
-    string message,
-    address user
+  event UserRegistered (
+    address indexed user
   );
 
   event DocumentIssued (
-    address owner,
-    address issuer
+    address indexed owner,
+    address indexed issuer
   );
 
   event TemplateCreated (
@@ -53,31 +52,29 @@ contract IdentityManager {
   );
 
   event RequestGenerated (
-    address verifier,
-    address owner
+    address indexed verifier,
+    address indexed owner
   );
 
   event RequestStatusUpdated (
-    address verifier,
-    address owner
+    address indexed verifier,
+    address indexed owner,
+    string status
   );
 
-  function login(string memory _entity, string memory _username) public returns(bool) {
+  function login(string memory _entity, string memory _username) view public returns(string memory, string memory, string memory) {
     require(bytes(_entity).length > 0);
     require(bytes(_username).length > 0);
 
     if (!compareStringsbyBytes(userDb[msg.sender].encryptionPublicKey, '') && compareStringsbyBytes(userDb[msg.sender].entity, _entity) && usernameDb[_username] == msg.sender) {
       // Success
-      emit UserAuthenticated('Success', 'Login successful', msg.sender);
-      return true;
+      return ('success', 'Logged-in successfully', _username);
     } else if (!compareStringsbyBytes(userDb[msg.sender].encryptionPublicKey, '') && compareStringsbyBytes(userDb[msg.sender].entity, _entity) && usernameDb[_username] != msg.sender) {
       // Incorrect username
-      emit UserAuthenticated('Failure', 'Incorrect username', msg.sender);
-      return false;
+      return ('warning', 'Incorrect username', '');
     } else {
       // Failure
-      emit UserAuthenticated('Failure', 'User does not exist', msg.sender);
-      return false;
+      return ('warning', 'User does not exist', '');
     }
   }
 
@@ -88,21 +85,18 @@ contract IdentityManager {
 
     if (compareStringsbyBytes(userDb[msg.sender].encryptionPublicKey, '') && compareStringsbyBytes(userDb[msg.sender].entity, '') && usernameDb[_username] == address(0)) {
       // Success
-      userDb[msg.sender] = User(_encryptionPublicKey, _entity);
+      userDb[msg.sender] = User(_encryptionPublicKey, _entity, _username);
       usernameDb[_username] = msg.sender;
-      emit UserAuthenticated('Success', 'Registration successful', msg.sender);
+      emit UserRegistered(msg.sender);
     } else if (compareStringsbyBytes(userDb[msg.sender].encryptionPublicKey, '') && compareStringsbyBytes(userDb[msg.sender].entity, '') && usernameDb[_username] != address(0)) {
       // Incorrect username
-      emit UserAuthenticated('Failure', 'Please use another username', msg.sender);
-      revert();
+      revert('Please use another username');
     } else if (compareStringsbyBytes(userDb[msg.sender].encryptionPublicKey, _encryptionPublicKey) && compareStringsbyBytes(userDb[msg.sender].entity, _entity) && usernameDb[_username] == msg.sender) {
       // Failure
-      emit UserAuthenticated('Failure', 'User already registered', msg.sender);
-      revert();
+      revert('You are already registered');
     } else {
       // Failure
-      emit UserAuthenticated('Failure', append('User already registered as ', userDb[msg.sender].entity), msg.sender);
-      revert();
+      revert(append('User already registered as ', userDb[msg.sender].entity));
     }
   }
 
@@ -143,20 +137,22 @@ contract IdentityManager {
     return (_issuer, _name, _data);
   }
 
-  function getDocuments() view public returns(address[] memory, string[] memory, bytes[] memory) {
+  function getDocuments() view public returns(address[] memory, string[] memory, string[] memory, bytes[] memory) {
     uint _documentCount = identities[msg.sender].length;
     address[] memory _issuer = new address[](_documentCount);
+    string[] memory _issuerUsername = new string[](_documentCount);
     string[] memory _name = new string[](_documentCount);
     bytes[] memory _data = new bytes[](_documentCount);
 
     for (uint256 index = 0; index < _documentCount; index++) {
       Document memory _docCopy = identities[msg.sender][index];
       _issuer[index] = _docCopy.issuer;
+      _issuerUsername[index] = userDb[_docCopy.issuer].username;
       _name[index] = _docCopy.name;
       _data[index] = _docCopy.data;
     }
 
-    return (_issuer, _name, _data);
+    return (_issuer, _issuerUsername, _name, _data);
   }
 
   function getDocument(string memory _name) view public returns(address, string memory, bytes memory) {
@@ -208,12 +204,13 @@ contract IdentityManager {
       }
     }
 
-    emit RequestStatusUpdated(_verifier, msg.sender);
+    emit RequestStatusUpdated(_verifier, msg.sender, _newStatus);
   }
 
-  function getOwnerRequests() view public returns(address[] memory, string[] memory, bytes[] memory, string[] memory) {
+  function getOwnerRequests() view public returns(address[] memory, string[] memory, string[] memory, bytes[] memory, string[] memory) {
     uint _reqCount = ownerRequests[msg.sender].length;
     address[] memory _requestor = new address[](_reqCount);
+    string[] memory _reqUsername = new string[](_reqCount);
     string[] memory _docName = new string[](_reqCount);
     bytes[] memory _properties = new bytes[](_reqCount);
     string[] memory _status = new string[](_reqCount);
@@ -221,17 +218,19 @@ contract IdentityManager {
     for (uint256 index = 0; index < _reqCount; index++) {
       Request memory _reqCopy = ownerRequests[msg.sender][index];
       _requestor[index] = _reqCopy.requestor;
+      _reqUsername[index] = userDb[_reqCopy.requestor].username;
       _docName[index] = _reqCopy.docName;
       _properties[index] = _reqCopy.properties;
       _status[index] = _reqCopy.status;
     }
 
-    return (_requestor, _docName, _properties, _status);
+    return (_requestor, _reqUsername, _docName, _properties, _status);
   }
 
-  function getVerifierRequests() view public returns(address[] memory, string[] memory, bytes[] memory, string[] memory) {
+  function getVerifierRequests() view public returns(address[] memory, string[] memory, string[] memory, bytes[] memory, string[] memory) {
     uint _reqCount = verifierRequests[msg.sender].length;
     address[] memory _owner = new address[](_reqCount);
+    string[] memory _ownerUsername = new string[](_reqCount);
     string[] memory _docName = new string[](_reqCount);
     bytes[] memory _properties = new bytes[](_reqCount);
     string[] memory _status = new string[](_reqCount);
@@ -239,12 +238,13 @@ contract IdentityManager {
     for (uint256 index = 0; index < _reqCount; index++) {
       Request memory _reqCopy = verifierRequests[msg.sender][index];
       _owner[index] = _reqCopy.owner;
+      _ownerUsername[index] = userDb[_reqCopy.owner].username;
       _docName[index] = _reqCopy.docName;
       _properties[index] = _reqCopy.properties;
       _status[index] = _reqCopy.status;
     }
 
-    return (_owner, _docName, _properties, _status);
+    return (_owner, _ownerUsername, _docName, _properties, _status);
   }
 
   function getEncryptionPublicKey(address _owner) view public returns(string memory) {

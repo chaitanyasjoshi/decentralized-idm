@@ -6,6 +6,8 @@ class auth {
     this.contract = null;
     this.user = null;
     this.init();
+
+    this.init = this.init.bind(this);
   }
 
   init = async () => {
@@ -46,15 +48,17 @@ class auth {
   };
 
   login = async (username) => {
-    await this.contract.methods
+    return await this.contract.methods
       .login('Owner', username)
       .call({ from: this.user })
-      .then((success) => {
-        if (success) {
+      .then(({ 0: status, 1: message, 2: username }) => {
+        if (status === 'success') {
           localStorage.setItem('authenticated', true);
+          localStorage.setItem('username', username);
         } else {
           localStorage.setItem('authenticated', false);
         }
+        return message;
       });
   };
 
@@ -87,6 +91,10 @@ class auth {
 
   getUser() {
     return this.user;
+  }
+
+  getUsername() {
+    return localStorage.getItem('username');
   }
 }
 
