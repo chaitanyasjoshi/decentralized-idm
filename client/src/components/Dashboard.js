@@ -7,6 +7,7 @@ import 'animate.css';
 
 import Navbar from './Navbar';
 import Card from './Card';
+import noDocs from '../assets/no_docs.svg';
 
 export default class Dashboard extends Component {
   state = {
@@ -26,6 +27,13 @@ export default class Dashboard extends Component {
   }
 
   initialize = () => {
+    window.ethereum.on('accountsChanged', async function (accounts) {
+      auth.logout(() => {
+        this.props.history.push('/');
+        window.location.reload();
+      });
+    });
+
     this.setState(
       { user: auth.getUser(), contract: auth.getContract() },
       () => {
@@ -71,21 +79,31 @@ export default class Dashboard extends Component {
       <div>
         <Navbar user={this.state.user} history={this.props.history} />
         <ReactNotification className='font-Poppins' />
-        <div className='mt-6 flex flex-wrap max-w-7xl mx-auto'>
-          {this.state.documents.map((ele, i) => {
-            return (
-              <Card
-                key={i}
-                store={store}
-                issuer={ele[0]}
-                issuerUname={ele[1]}
-                dateOfIssue={ele[2]}
-                name={ele[3]}
-                data={ele[4]}
-                user={this.state.user}
-              />
-            );
-          })}
+        <div className='mt-6 flex flex-wrap max-w-7xl mx-auto font-Poppins'>
+          {this.state.documents.length === 0 ? (
+            <div className='flex flex-col w-full items-center justify-center'>
+              <img src={noDocs} className='h-96 w-96' />
+              <p className='p-5 text-4xl font-medium'>No documents found!</p>
+              <p className='text-xl'>
+                Visit issuer's website to issue your document
+              </p>
+            </div>
+          ) : (
+            this.state.documents.map((ele, i) => {
+              return (
+                <Card
+                  key={i}
+                  store={store}
+                  issuer={ele[0]}
+                  issuerUname={ele[1]}
+                  dateOfIssue={ele[2]}
+                  name={ele[3]}
+                  data={ele[4]}
+                  user={this.state.user}
+                />
+              );
+            })
+          )}
         </div>
       </div>
     );

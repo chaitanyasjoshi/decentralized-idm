@@ -48,7 +48,7 @@ export default function Card(props) {
       style={{
         background: gradient(`${props.issuer + props.name}`),
       }}
-      className='w-96 h-56 m-4 font-Poppins rounded-xl text-gray-100 shadow-md transition-transform transform hover:scale-105 hover:shadow-2xl'
+      className='w-96 h-56 m-4 rounded-xl text-gray-100 shadow-md transition-transform transform hover:scale-105 hover:shadow-2xl'
     >
       <div className='w-full p-6 absolute'>
         <div className='flex justify-center'>

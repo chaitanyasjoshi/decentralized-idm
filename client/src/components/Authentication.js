@@ -22,6 +22,13 @@ export default function Authentication(props) {
   }, []);
 
   const initialize = () => {
+    window.ethereum.on('accountsChanged', async function (accounts) {
+      auth.logout(() => {
+        props.history.push('/');
+        window.location.reload();
+      });
+    });
+
     auth
       .getContract()
       .events.UserRegistered(
@@ -74,25 +81,41 @@ export default function Authentication(props) {
   };
 
   const handleLogin = () => {
-    auth.login(username).then((message) => {
-      if (auth.isAuthenticated()) {
-        props.history.push('/dashboard');
-      } else {
-        store.addNotification({
-          title: 'Login failed',
-          message: message,
-          type: 'danger', // 'default', 'success', 'info', 'warning'
-          container: 'top-right', // where to position the notifications
-          animationIn: ['animate__animated', 'animate__fadeInDown'], // animate.css classes that's applied
-          animationOut: ['animate__animated', 'animate__fadeOutDown'], // animate.css classes that's applied
-          dismiss: {
-            duration: 2000,
-            showIcon: true,
-            pauseOnHover: true,
-          },
-        });
-      }
-    });
+    if (username === '') {
+      store.addNotification({
+        title: 'Invalid username',
+        message: 'Username cannot be empty',
+        type: 'danger', // 'default', 'success', 'info', 'warning'
+        container: 'top-right', // where to position the notifications
+        animationIn: ['animate__animated', 'animate__fadeInDown'], // animate.css classes that's applied
+        animationOut: ['animate__animated', 'animate__fadeOutDown'], // animate.css classes that's applied
+        dismiss: {
+          duration: 2000,
+          showIcon: true,
+          pauseOnHover: true,
+        },
+      });
+    } else {
+      auth.login(username).then((message) => {
+        if (auth.isAuthenticated()) {
+          props.history.push('/dashboard');
+        } else {
+          store.addNotification({
+            title: 'Login failed',
+            message: message,
+            type: 'danger', // 'default', 'success', 'info', 'warning'
+            container: 'top-right', // where to position the notifications
+            animationIn: ['animate__animated', 'animate__fadeInDown'], // animate.css classes that's applied
+            animationOut: ['animate__animated', 'animate__fadeOutDown'], // animate.css classes that's applied
+            dismiss: {
+              duration: 2000,
+              showIcon: true,
+              pauseOnHover: true,
+            },
+          });
+        }
+      });
+    }
   };
 
   return (
@@ -115,7 +138,7 @@ export default function Authentication(props) {
               htmlFor='username'
               className='block text-sm font-medium text-gray-700'
             >
-              Username
+              Username<span className='text-red-500'>*</span>
             </label>
             <input
               type='text'

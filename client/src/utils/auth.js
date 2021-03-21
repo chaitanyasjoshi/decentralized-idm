@@ -5,7 +5,6 @@ class auth {
   constructor() {
     this.contract = null;
     this.user = null;
-    this.init();
 
     this.init = this.init.bind(this);
   }
@@ -29,15 +28,6 @@ class auth {
       // Set web3, accounts, and contract to the state
       this.setContract(instance);
       this.setUser(accounts[0]);
-
-      window.ethereum.on(
-        'accountsChanged',
-        async function (accounts) {
-          auth.logout(() => {
-            this.props.history.push('/');
-          });
-        }.bind(this)
-      );
     } catch (error) {
       // Catch any errors for any of the above operations.
       alert(
@@ -70,6 +60,7 @@ class auth {
 
   logout(callback) {
     localStorage.setItem('authenticated', false);
+    localStorage.removeItem('username');
     callback();
   }
 
