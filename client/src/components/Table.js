@@ -54,20 +54,29 @@ export default class Table extends Component {
     await this.state.contract.methods
       .getOwnerRequests()
       .call({ from: this.state.user })
-      .then(({ 0: requestor, 1: docName, 2: properties, 3: status }) => {
-        const requests = [];
+      .then(
+        ({
+          0: requestor,
+          1: requestorUname,
+          2: docName,
+          3: properties,
+          4: status,
+        }) => {
+          const requests = [];
 
-        for (let index = 0; index < requestor.length; index++) {
-          let ele = [
-            requestor[index],
-            docName[index],
-            properties[index],
-            status[index],
-          ];
-          requests.push(ele);
+          for (let index = 0; index < requestor.length; index++) {
+            let ele = [
+              requestor[index],
+              requestorUname[index],
+              docName[index],
+              properties[index],
+              status[index],
+            ];
+            requests.push(ele);
+          }
+          this.setState({ requests });
         }
-        this.setState({ requests });
-      });
+      );
   };
 
   updateStatus = async (newStatus, requestor, docName, properties) => {
@@ -212,9 +221,10 @@ export default class Table extends Component {
                           store={store}
                           user={this.state.user}
                           requestor={ele[0]}
-                          docName={ele[1]}
-                          properties={ele[2]}
-                          status={ele[3]}
+                          requestorUname={ele[1]}
+                          docName={ele[2]}
+                          properties={ele[3]}
+                          status={ele[4]}
                           updateStatus={this.updateStatus}
                         />
                       );

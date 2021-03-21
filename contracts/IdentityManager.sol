@@ -12,6 +12,7 @@ contract IdentityManager {
 
   struct Document {
     address issuer;
+    uint dateOfIssue;
     string name;
     bytes data;
   }
@@ -100,12 +101,12 @@ contract IdentityManager {
     }
   }
 
-  function issueDocument(string memory _name, bytes memory _data, string memory _templateData, address _owner) public {
+  function issueDocument(string memory _name, uint _dateOfIssue, bytes memory _data, string memory _templateData, address _owner) public {
     require(bytes(_name).length > 0);
     require(bytes(_data).length > 0);
     require(_owner != msg.sender, 'You cannot issue document for yourself');
 
-    identities[_owner].push(Document(msg.sender, _name, _data));
+    identities[_owner].push(Document(msg.sender, _dateOfIssue, _name, _data));
     emit DocumentIssued(_owner, msg.sender);
 
     createTemplate(_name, _templateData, msg.sender);
@@ -137,10 +138,11 @@ contract IdentityManager {
     return (_issuer, _name, _data);
   }
 
-  function getDocuments() view public returns(address[] memory, string[] memory, string[] memory, bytes[] memory) {
+  function getDocuments() view public returns(address[] memory, string[] memory, uint[] memory, string[] memory, bytes[] memory) {
     uint _documentCount = identities[msg.sender].length;
     address[] memory _issuer = new address[](_documentCount);
     string[] memory _issuerUsername = new string[](_documentCount);
+    uint[] memory _dateOfIssue = new uint[](_documentCount);
     string[] memory _name = new string[](_documentCount);
     bytes[] memory _data = new bytes[](_documentCount);
 
@@ -148,11 +150,12 @@ contract IdentityManager {
       Document memory _docCopy = identities[msg.sender][index];
       _issuer[index] = _docCopy.issuer;
       _issuerUsername[index] = userDb[_docCopy.issuer].username;
+      _dateOfIssue[index] = _docCopy.dateOfIssue;
       _name[index] = _docCopy.name;
       _data[index] = _docCopy.data;
     }
 
-    return (_issuer, _issuerUsername, _name, _data);
+    return (_issuer, _issuerUsername, _dateOfIssue, _name, _data);
   }
 
   function getDocument(string memory _name) view public returns(address, string memory, bytes memory) {

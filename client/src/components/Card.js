@@ -54,20 +54,26 @@ export default function Card(props) {
         <div className='flex justify-center'>
           <p className='font-medium text-xl'>{props.name}</p>
         </div>
-        <div className='flex-wrap'>
-          <p className='font-normal'>Issued by</p>
-          <p className='font-light text-base tracking-tighter'>
-            {props.issuer}
-          </p>
+        <div className='flex flex-col'>
+          <div className='flex justify-between'>
+            <p className='font-normal text-gray-200'>Issued by</p>
+            <p className='font-normal'>{props.issuerUname}</p>
+          </div>
+          <div className='flex justify-between'>
+            <p className='font-normal text-gray-200'>Issued on</p>
+            <p className='font-normal'>
+              {new Date(props.dateOfIssue * 1000).toLocaleString()}
+            </p>
+          </div>
           {decryptedData ? (
             decryptedData.map((ele, i) => (
               <div key={i} className='flex justify-between'>
-                <p className='font-normal'>{ele.fieldLabel}</p>
-                <p className='font-light tracking-tighter'>{ele.fieldValue}</p>
+                <p className='font-normal text-gray-200'>{ele.fieldLabel}</p>
+                <p className='font-normal'>{ele.fieldValue}</p>
               </div>
             ))
           ) : (
-            <div className='flex justify-center items-center h-24 bg-white bg-opacity-25 rounded-md'>
+            <div className='flex justify-center items-center mt-1 h-24 bg-white bg-opacity-25 rounded-md'>
               <button
                 name='decrypt'
                 id='decrypt'

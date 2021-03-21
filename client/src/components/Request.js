@@ -62,7 +62,7 @@ export default function Request(props) {
             <div className='text-sm font-medium text-gray-900'>
               {props.requestor}
             </div>
-            <div className='text-sm text-gray-500'>jane.cooper@example.com</div>
+            <div className='text-sm text-gray-500'>{props.requestorUname}</div>
           </div>
         </div>
       </td>

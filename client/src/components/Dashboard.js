@@ -48,15 +48,22 @@ export default class Dashboard extends Component {
     await this.state.contract.methods
       .getDocuments()
       .call({ from: this.state.user })
-      .then((documents) => {
-        const docs = [];
-        const { 0: issuer, 1: name, 2: data } = documents;
-        for (let index = 0; index < issuer.length; index++) {
-          let ele = [issuer[index], name[index], data[index]];
-          docs.push(ele);
+      .then(
+        ({ 0: issuer, 1: issuerUname, 2: dateOfIssue, 3: name, 4: data }) => {
+          const docs = [];
+          for (let index = 0; index < issuer.length; index++) {
+            let ele = [
+              issuer[index],
+              issuerUname[index],
+              dateOfIssue[index],
+              name[index],
+              data[index],
+            ];
+            docs.push(ele);
+          }
+          this.setState({ documents: docs });
         }
-        this.setState({ documents: docs });
-      });
+      );
   };
 
   render() {
@@ -71,8 +78,10 @@ export default class Dashboard extends Component {
                 key={i}
                 store={store}
                 issuer={ele[0]}
-                name={ele[1]}
-                data={ele[2]}
+                issuerUname={ele[1]}
+                dateOfIssue={ele[2]}
+                name={ele[3]}
+                data={ele[4]}
                 user={this.state.user}
               />
             );
